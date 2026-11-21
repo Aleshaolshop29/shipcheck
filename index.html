@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShipCheck — Is your release ready to ship?</title>
+<meta name="description" content="ShipCheck gives any software release a 0–100 readiness score, blockers, and next steps — from a public GitHub repo or a 2-minute checklist. No install, no account.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">✓</span>
+      <span class="brand-name">ShipCheck</span>
+      <span class="brand-tag">SLAY HACKS 2026</span>
+    </div>
+    <p class="tagline">Is your release ready to ship? Get a 0–100 readiness score, the blockers, and the next steps — in seconds.</p>
+    <ol class="how">
+      <li><strong>1.</strong> Pick a release — a sample, a GitHub repo, or a quick checklist.</li>
+      <li><strong>2.</strong> ShipCheck scores it from real signals: CI, bugs, PRs, docs, release hygiene.</li>
+      <li><strong>3.</strong> Fix the blockers, re-check, and ship with confidence.</li>
+    </ol>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ============ INPUT ============ -->
+  <section class="card" aria-label="Pick a release to check">
+    <h2>Check a release</h2>
+
+    <div class="tabs" role="tablist" aria-label="Input method">
+      <button class="tab active" data-tab="samples" role="tab" aria-selected="true">Sample project</button>
+      <button class="tab" data-tab="github" role="tab" aria-selected="false">GitHub repo</button>
+      <button class="tab" data-tab="checklist" role="tab" aria-selected="false">Quick checklist</button>
+    </div>
+
+    <!-- Samples -->
+    <div class="tab-panel active" id="panel-samples" role="tabpanel">
+      <p class="hint">Three realistic releases, one for each verdict band. No GitHub needed.</p>
+      <div class="sample-grid" id="sampleGrid"></div>
+    </div>
+
+    <!-- GitHub -->
+    <div class="tab-panel" id="panel-github" role="tabpanel">
+      <p class="hint">Analyse a real public repository. ShipCheck reads open issues, PRs, CI status, docs and releases through the public GitHub API — no token, no sign-in, nothing is stored.</p>
+      <form id="githubForm" class="github-form">
+        <label for="repoInput">Repository</label>
+        <div class="github-row">
+          <input id="repoInput" type="text" placeholder="owner/repo" value="Aleshaolshop29/make-fun-guide" autocomplete="off" spellcheck="false">
+          <button type="submit" class="btn primary" id="analyzeBtn">Analyse repo</button>
+        </div>
+        <p class="fine">Try it: <button type="button" class="linklike" data-repo="Aleshaolshop29/make-fun-guide">Aleshaolshop29/make-fun-guide</button> · <button type="button" class="linklike" data-repo="facebook/react">facebook/react</button> · <button type="button" class="linklike" data-repo="vercel/next.js">vercel/next.js</button></p>
+      </form>
+      <div id="githubStatus" class="status" role="status" aria-live="polite"></div>
+    </div>
+
+    <!-- Checklist -->
+    <div class="tab-panel" id="panel-checklist" role="tabpanel">
+      <p class="hint">No GitHub? Answer 8 quick questions about your release — the same scoring model applies.</p>
+      <form id="checklistForm" class="checklist">
+        <div class="q">
+          <label for="q-ci">1. CI status on the latest commit?</label>
+          <select id="q-ci">
+            <option value="success">Green — tests pass</option>
+            <option value="failure">Failing — red build</option>
+            <option value="pending">Still running</option>
+            <option value="unknown" selected>No CI set up / not sure</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-bugs">2. Open critical / blocker bugs?</label>
+          <select id="q-bugs">
+            <option value="0" selected>None</option>
+            <option value="1">1</option>
+            <option value="3">2–3</option>
+            <option value="5">4 or more</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-stale">3. Pull requests open for over 2 weeks?</label>
+          <select id="q-stale">
+            <option value="0" selected>None</option>
+            <option value="1">1–2</option>
+            <option value="3">3–5</option>
+            <option value="6">6 or more</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-unrev">4. Pull requests waiting for a first review?</label>
+          <select id="q-unrev">
+            <option value="0" selected>None</option>
+            <option value="1">1–2</option>
+            <option value="3">3 or more</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-readme">5. README up to date?</label>
+          <select id="q-readme">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No / missing</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-changelog">6. CHANGELOG and release notes written?</label>
+          <select id="q-changelog">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No / missing</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-release">7. Is there a tagged release for this version?</label>
+          <select id="q-release">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="q-rollback">8. Rollback plan ready if the release breaks?</label>
+          <select id="q-rollback">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No</option>
+            <option value="unknown">Not sure</option>
+          </select>
+        </div>
+        <button type="submit" class="btn primary">Calculate my score</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="card results" id="results" hidden aria-label="Readiness results">
+    <div class="results-head">
+      <div>
+        <p class="eyebrow" id="resultEyebrow">Readiness report</p>
+        <h2 id="resultTitle">—</h2>
+        <p class="muted" id="resultMeta">—</p>
+      </div>
+      <div class="gauge" id="gauge" role="img" aria-label="Readiness score">
+        <svg viewBox="0 0 160 160" width="160" height="160" aria-hidden="true">
+          <circle class="gauge-track" cx="80" cy="80" r="68"></circle>
+          <circle class="gauge-fill" id="gaugeFill" cx="80" cy="80" r="68"></circle>
+        </svg>
+        <div class="gauge-center">
+          <span class="gauge-score" id="gaugeScore">–</span>
+          <span class="gauge-max">/ 100</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="verdict" id="verdictBadge">—</p>
+    <p id="degradedBanner" class="degraded" hidden></p>
+
+    <h3>Score breakdown</h3>
+    <div id="dimensions" class="dimensions"></div>
+
+    <h3>Blockers <span class="muted" id="blockerCount"></span></h3>
+    <div id="gaps" class="gaps"></div>
+
+    <h3>Release briefing <span class="muted">(rule-based)</span></h3>
+    <div class="briefing" id="briefing"></div>
+    <div class="actions-row">
+      <button class="btn" id="copyBtn" type="button">Copy summary</button>
+      <span class="muted" id="copyStatus" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <!-- ============ HOW THE SCORE WORKS ============ -->
+  <section class="card" aria-label="How the score works">
+    <h2>How the score works</h2>
+    <p>ShipCheck starts at 100 and subtracts a penalty for every problem it finds. Each problem is capped, so no single broken area can zero the score on its own. The model is deterministic — the same release always gets the same score.</p>
+    <table class="model">
+      <thead>
+        <tr><th>Area</th><th>What counts</th><th>Penalty</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tests &amp; CI</td><td>CI failing / pending / no status found</td><td>15 / 5 / 8</td></tr>
+        <tr><td>Bugs</td><td>Open critical / blocker bugs</td><td>8 each, max 32</td></tr>
+        <tr><td>Pull Requests</td><td>PRs open &gt; 14 days; PRs with no review</td><td>5 / 4 each, max 36</td></tr>
+        <tr><td>Documentation</td><td>Missing README / CHANGELOG / release notes</td><td>6 / 4 / 2</td></tr>
+        <tr><td>Release Hygiene</td><td>No release or tag; no commits in 30 days; no rollback plan</td><td>8 / 6 / 6</td></tr>
+      </tbody>
+    </table>
+    <p class="bands">
+      <span class="band-chip success">90–100 · READY — Ship it</span>
+      <span class="band-chip warning">70–89 · CAUTION — Ship with care</span>
+      <span class="band-chip warning">50–69 · HOLD — Fix blockers first</span>
+      <span class="band-chip danger">0–49 · NO-GO — Do not ship</span>
+    </p>
+    <p class="fine">A signal that could not be checked (for example, the rollback plan is not visible from the GitHub API) is shown as “not checked” — it adds no penalty and is reported, never silently ignored.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p><strong>ShipCheck</strong> — built for SLAY HACKS 2026. Runs entirely in your browser: no account, no server, no data leaves this page. Scoring model inspired by the ShipReady release-readiness concept.</p>
+  </div>
+</footer>
+
+<script src="scoring.js"></script>
+<script src="samples.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
